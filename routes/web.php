@@ -12,7 +12,7 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/dashboard');
+Route::redirect('/', '/shop');
 Route::get('/shop', [ProductController::class, 'shop'])->name('shop');
 Route::post('/shop/order', [CustomerOrderController::class, 'store'])
     ->name('shop.order');
@@ -32,6 +32,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])
+    ->name('transactions.show');
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -40,8 +42,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
     Route::resource('/users', UserController::class);
-    Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])
-    ->name('transactions.show');
     Route::post('/products/{product}/restock', [ProductController::class, 'restock'])
     ->name('products.restock');
     Route::get('/stock-movements', [StockMovementController::class, 'index'])

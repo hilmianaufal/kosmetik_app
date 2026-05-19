@@ -4,16 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TransactionItem extends Model
+class StockMovement extends Model
 {
     protected $fillable = [
-        'transaction_id',
         'product_id',
+        'type',
         'qty',
-        'price',
-        'subtotal',
-        'cost_price',
-        'profit',
+        'note',
     ];
 
     public function product()

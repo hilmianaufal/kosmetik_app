@@ -4,17 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TransactionItem extends Model
+class CustomerOrderItem extends Model
 {
     protected $fillable = [
-        'transaction_id',
+        'customer_order_id',
         'product_id',
         'qty',
         'price',
         'subtotal',
-        'cost_price',
-        'profit',
     ];
+
+    public function order()
+    {
+        return $this->belongsTo(CustomerOrder::class, 'customer_order_id');
+    }
 
     public function product()
     {

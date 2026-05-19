@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\StockMovement;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use Illuminate\Http\Request;
@@ -16,33 +17,47 @@ class PosController extends Controller
         return view('pos', compact('products'));
     }
 
-    public function checkout(Request $request)
-    {
-        $transaction = Transaction::create([
-            'total' => $request->total,
-            'payment' => $request->payment,
-            'change' => $request->change,
-        ]);
+        public function checkout(Request $request)
+        {
+            foreach ($request->items as $item) {
+                $product = Product::find($item['id']);
 
-        foreach ($request->items as $item) {
+                if (!$product || $product->stock < $item['qty']) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Stok produk tidak cukup.'
+                    ], 422);
+                }
+            }
 
-            TransactionItem::create([
-                'transaction_id' => $transaction->id,
-                'product_id' => $item['id'],
-                'qty' => $item['qty'],
-                'price' => $item['price'],
-                'subtotal' => $item['qty'] * $item['price'],
+            $transaction = Transaction::create([
+                'total' => $request->total,
+                'payment' => $request->payment,
+                'change' => $request->change,
             ]);
 
-            $product = Product::find($item['id']);
+            foreach ($request->items as $item) {
+                TransactionItem::create([
+                    'transaction_id' => $transaction->id,
+                    'product_id' => $item['id'],
+                    'qty' => $item['qty'],
+                    'price' => $item['price'],
+                    'cost_price' => $product->cost_price,
+                    'subtotal' => $item['qty'] * $item['price'],
+                    'profit' => ($item['price'] - $product->cost_price) * $item['qty'],
+                ]);
 
-            if ($product) {
-                $product->decrement('stock', $item['qty']);
+                Product::find($item['id'])->decrement('stock', $item['qty']);
+                StockMovement::create([
+                        'product_id' => $item['id'],
+                        'type' => 'out',
+                        'qty' => $item['qty'],
+                        'note' => 'Penjualan transaksi #' . $transaction->id,
+                    ]);
             }
-        }
 
-        return response()->json([
-            'success' => true
-        ]);
-    }
+            return response()->json([
+                'success' => true
+            ]);
+        }
 }

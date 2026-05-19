@@ -17,4 +17,10 @@ class Product extends Model
         'expired_date',
         'image',
     ];
+
+
+    public function customerOrderItems()
+    {
+        return $this->hasMany(CustomerOrderItem::class);
+    }
 }

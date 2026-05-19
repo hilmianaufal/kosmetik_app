@@ -35,64 +35,55 @@
                     Rp {{ number_format($transaction->total, 0, ',', '.') }}
                 </h1>
             </div>
-
+                <a href="/transactions/{{ $transaction->id }}"
+                class="px-4 py-2 rounded-xl bg-pink-50 text-pink-500 font-bold">
+                    Detail
+                </a>
         </div>
 
         <div class="space-y-3">
 
-            @foreach ($transaction->items as $item)
+@foreach ($transaction->items as $item)
 
-            <div class="flex items-center justify-between border-b border-pink-50 pb-3">
+<div class="flex items-center justify-between border-b border-pink-50 pb-3">
 
-                <div class="flex items-center gap-4">
+    <div class="flex items-center gap-4">
 
-                    <div class="w-14 h-14 rounded-2xl overflow-hidden bg-pink-50">
+        <div class="w-14 h-14 rounded-2xl overflow-hidden bg-pink-50">
+            @if ($item->product && $item->product->image)
 
-                        @if ($item->product && $item->product->image)
+                @if (Str::startsWith($item->product->image, 'http'))
+                    <img src="{{ $item->product->image }}" class="w-full h-full object-cover">
+                @else
+                    <img src="/storage/{{ $item->product->image }}" class="w-full h-full object-cover">
+                @endif
 
-                            @if (Str::startsWith($item->product->image, 'http'))
-
-                                <img
-                                    src="{{ $item->product->image }}"
-                                    class="w-full h-full object-cover">
-
-                            @else
-
-                                <img
-                                    src="/storage/{{ $item->product->image }}"
-                                    class="w-full h-full object-cover">
-
-                            @endif
-
-                        @else
-
-                            <div class="w-full h-full flex items-center justify-center">
-                                💄
-                            </div>
-
-                        @endif
-
-                    </div>
-
-                    <div>
-                        <p class="font-bold">
-                            {{ $item->product->name ?? 'Produk Dihapus' }}
-                        </p>
-
-                        <p class="text-sm text-gray-400">
-                            {{ $item->qty }} x Rp {{ number_format($item->price, 0, ',', '.') }}
-                        </p>
-                    </div>
-
+            @else
+                <div class="w-full h-full flex items-center justify-center">
+                    💄
                 </div>
+            @endif
+        </div>
 
-                <h3 class="font-extrabold text-pink-500">
-                    Rp {{ number_format($item->subtotal, 0, ',', '.') }}
-                </h3>
+        <div>
+            <p class="font-bold">
+                {{ $item->product->name ?? 'Produk Dihapus' }}
+            </p>
 
-            </div>
+            <p class="text-sm text-gray-400">
+                {{ $item->qty }} x Rp {{ number_format($item->price, 0, ',', '.') }}
+            </p>
+        </div>
 
-            @endforeach
+    </div>
+
+    <h3 class="font-extrabold text-pink-500">
+        Rp {{ number_format($item->subtotal, 0, ',', '.') }}
+    </h3>
+
+</div>
+
+@endforeach
 
         </div>
 

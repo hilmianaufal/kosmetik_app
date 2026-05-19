@@ -9,7 +9,17 @@
 <p class="text-gray-500 mb-6">
     Kelola produk MATANU BEAUTY STORE
 </p>
+@if ($errors->any())
+    <div class="mb-6 bg-red-50 border border-red-100 text-red-500 rounded-2xl p-4 font-semibold">
+        {{ $errors->first() }}
+    </div>
+@endif
 
+@if (session('success'))
+    <div class="mb-6 bg-emerald-50 border border-emerald-100 text-emerald-500 rounded-2xl p-4 font-semibold">
+        {{ session('success') }}
+    </div>
+@endif
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
     <div class="bg-white/90 rounded-[32px] p-6 shadow-xl border border-pink-100">
@@ -59,13 +69,35 @@
                         <td>{{ $product->stock }}</td>
                         <td>Rp {{ number_format($product->price, 0, ',', '.') }}</td>
                         <td>
+                            <form action="/products/{{ $product->id }}/restock" method="POST" class="flex items-center gap-2 mb-2">
+                                @csrf
+
+                                <input
+                                    type="number"
+                                    name="qty"
+                                    min="1"
+                                    placeholder="+ Stok"
+                                    class="w-24 px-3 py-2 rounded-xl border border-pink-100 outline-none">
+
+                                <input
+                                    type="text"
+                                    name="note"
+                                    placeholder="Catatan"
+                                    class="w-32 px-3 py-2 rounded-xl border border-pink-100 outline-none">
+
+                                <button class="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-500 font-bold">
+                                    Restock
+                                </button>
+                            </form>
                             <form action="/products/{{ $product->id }}" method="POST">
                                 @csrf
                                 @method('DELETE')
                                 <a href="/products/{{ $product->id }}/edit" class="px-4 py-2 rounded-xl bg-pink-50 text-pink-500 font-bold">
                                     Edit
                                 </a>
-                                <button class="px-4 py-2 rounded-xl bg-red-50 text-red-500 font-bold">
+                                <button
+                                    onclick="return confirm('Yakin ingin menghapus produk ini?')"
+                                    class="px-4 py-2 rounded-xl bg-red-50 text-red-500 font-bold">
                                     Hapus
                                 </button>
                             </form>

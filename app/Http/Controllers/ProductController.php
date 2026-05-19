@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\StockMovement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -16,15 +18,15 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required',
-            'brand' => 'nullable',
-            'category' => 'nullable',
+            'name' => 'required|string|max:255',
+            'brand' => 'nullable|string|max:255',
+            'category' => 'nullable|string|max:255',
             'barcode' => 'nullable|unique:products,barcode',
-            'stock' => 'required|integer',
-            'price' => 'required|integer',
-            'cost_price' => 'nullable|integer',
+            'stock' => 'required|integer|min:0',
+            'price' => 'required|integer|min:0',
+            'cost_price' => 'nullable|integer|min:0',
             'expired_date' => 'nullable|date',
-            'image' => 'nullable|image',
+            'image' => 'nullable|image|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
@@ -33,7 +35,7 @@ class ProductController extends Controller
 
         Product::create($data);
 
-        return back();
+        return back()->with('success', 'Produk berhasil ditambahkan');
     }
 
     public function edit(Product $product)
@@ -56,6 +58,10 @@ class ProductController extends Controller
             ]);
 
             if ($request->hasFile('image')) {
+                if ($product->image && !str_starts_with($product->image, 'http')) {
+                    Storage::disk('public')->delete($product->image);
+                }
+
                 $data['image'] = $request->file('image')->store('products', 'public');
             }
 
@@ -64,9 +70,52 @@ class ProductController extends Controller
             return redirect('/products');
         }
 
-    public function destroy(Product $product)
-    {
-        $product->delete();
-        return back();
-    }
+        public function destroy(Product $product)
+        {
+            if ($product->image && !str_starts_with($product->image, 'http')) {
+                Storage::disk('public')->delete($product->image);
+            }
+
+            $product->delete();
+
+            return back()->with('success', 'Produk berhasil dihapus');
+        }
+
+        public function restock(Request $request, Product $product)
+        {
+            $data = $request->validate([
+                'qty' => 'required|integer|min:1',
+                'note' => 'nullable|string',
+            ]);
+
+            $product->increment('stock', $data['qty']);
+
+            StockMovement::create([
+                'product_id' => $product->id,
+                'type' => 'in',
+                'qty' => $data['qty'],
+                'note' => $data['note'] ?? 'Restock produk',
+            ]);
+
+            return back()->with('success', 'Stok berhasil ditambahkan');
+        }
+
+        public function expired()
+            {
+                $products = Product::whereNotNull('expired_date')
+                    ->whereDate('expired_date', '<=', now()->addDays(30))
+                    ->orderBy('expired_date')
+                    ->get();
+
+                return view('products.expired', compact('products'));
+            }
+
+        public function shop()
+            {
+                $products = Product::where('stock', '>', 0)
+                    ->latest()
+                    ->get();
+
+                return view('shop.index', compact('products'));
+            }
 }

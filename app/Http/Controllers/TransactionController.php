@@ -14,4 +14,11 @@ class TransactionController extends Controller
 
         return view('transactions.index', compact('transactions'));
     }
+
+    public function show(Transaction $transaction)
+    {
+        $transaction->load('items.product');
+
+        return view('transactions.show', compact('transaction'));
+    }
 }

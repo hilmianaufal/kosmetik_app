@@ -30,26 +30,20 @@ class ProductController extends Controller
             'image' => 'nullable|image|max:2048',
         ]);
 
-            if ($request->hasFile('image')) {
-                $file = $request->file('image');
-                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            $uploadPath = $_SERVER['DOCUMENT_ROOT'] . '/uploads/products';
 
-                $file->move(public_path('uploads/products'), $filename);
-
-                $uploadPath = '/home/u912812505/domains/keboncinta.com/public_html/matanu/uploads/products';
-
-                    if (!file_exists($uploadPath)) {
-                        mkdir($uploadPath, 0755, true);
-                    }
-                if ($request->hasFile('image')) {
-                    $file = $request->file('image');
-                    $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-
-                    $file->storeAs('uploads/products', $filename, 'matanu_public');
-
-                    $data['image'] = 'uploads/products/' . $filename;
-                }
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
             }
+
+            $file = $request->file('image');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            $file->move($uploadPath, $filename);
+
+            $data['image'] = 'uploads/products/' . $filename;
+        }
 
         Product::create($data);
 
@@ -62,49 +56,46 @@ class ProductController extends Controller
         }
 
     public function update(Request $request, Product $product)
-        {
-            $data = $request->validate([
-                'name' => 'required',
-                'brand' => 'nullable',
-                'category' => 'nullable',
-                'barcode' => 'nullable|unique:products,barcode,' . $product->id,
-                'stock' => 'required|integer',
-                'price' => 'required|integer',
-                'cost_price' => 'nullable|integer',
-                'expired_date' => 'nullable|date',
-                'image' => 'nullable|image',
-            ]);
+    {
+        $data = $request->validate([
+            'name' => 'required',
+            'brand' => 'nullable',
+            'category' => 'nullable',
+            'barcode' => 'nullable|unique:products,barcode,' . $product->id,
+            'stock' => 'required|integer',
+            'price' => 'required|integer',
+            'cost_price' => 'nullable|integer',
+            'expired_date' => 'nullable|date',
+            'image' => 'nullable|image|max:2048',
+        ]);
 
-            if ($request->hasFile('image')) {
-                if ($product->image && !str_starts_with($product->image, 'http')) {
-                    File::delete(public_path($product->image));
-                }
+        if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            $uploadPath = $_SERVER['DOCUMENT_ROOT'] . '/uploads/products';
 
-                $file = $request->file('image');
-                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
 
-                $file->move(public_path('uploads/products'), $filename);
+            if ($product->image && !str_starts_with($product->image, 'http')) {
+                $oldImage = $_SERVER['DOCUMENT_ROOT'] . '/' . $product->image;
 
-               $uploadPath = '/home/u912812505/domains/keboncinta.com/public_html/matanu/uploads/products';
-
-                    if (!file_exists($uploadPath)) {
-                        mkdir($uploadPath, 0755, true);
-                    }
-
-                if ($request->hasFile('image')) {
-                    $file = $request->file('image');
-                    $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-
-                    $file->storeAs('uploads/products', $filename, 'matanu_public');
-
-                    $data['image'] = 'uploads/products/' . $filename;
+                if (file_exists($oldImage)) {
+                    unlink($oldImage);
                 }
             }
 
-            $product->update($data);
+            $file = $request->file('image');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
-            return redirect('/products');
+            $file->move($uploadPath, $filename);
+
+            $data['image'] = 'uploads/products/' . $filename;
         }
+
+        $product->update($data);
+
+        return redirect('/products')->with('success', 'Produk berhasil diperbarui');
+    }
 
         public function destroy(Product $product)
         {

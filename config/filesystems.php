@@ -47,6 +47,13 @@ return [
             'report' => false,
         ],
 
+        'matanu_public' => [
+                'driver' => 'local',
+                'root' => '/home/u912812505/domains/keboncinta.com/public_html/matanu',
+                'url' => env('APP_URL'),
+                'visibility' => 'public',
+            ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

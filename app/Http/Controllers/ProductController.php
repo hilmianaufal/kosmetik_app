@@ -41,15 +41,14 @@ class ProductController extends Controller
                     if (!file_exists($uploadPath)) {
                         mkdir($uploadPath, 0755, true);
                     }
+                if ($request->hasFile('image')) {
+                    $file = $request->file('image');
+                    $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
-                    if ($request->hasFile('image')) {
-                        $file = $request->file('image');
-                        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $file->storeAs('uploads/products', $filename, 'matanu_public');
 
-                        $file->move($uploadPath, $filename);
-
-                        $data['image'] = 'uploads/products/' . $filename;
-                    }
+                    $data['image'] = 'uploads/products/' . $filename;
+                }
             }
 
         Product::create($data);
@@ -92,14 +91,14 @@ class ProductController extends Controller
                         mkdir($uploadPath, 0755, true);
                     }
 
-                    if ($request->hasFile('image')) {
-                        $file = $request->file('image');
-                        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                if ($request->hasFile('image')) {
+                    $file = $request->file('image');
+                    $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
-                        $file->move($uploadPath, $filename);
+                    $file->storeAs('uploads/products', $filename, 'matanu_public');
 
-                        $data['image'] = 'uploads/products/' . $filename;
-                    }
+                    $data['image'] = 'uploads/products/' . $filename;
+                }
             }
 
             $product->update($data);

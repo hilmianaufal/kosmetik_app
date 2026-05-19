@@ -36,7 +36,20 @@ class ProductController extends Controller
 
                 $file->move(public_path('uploads/products'), $filename);
 
-                $data['image'] = 'uploads/products/' . $filename;
+                $uploadPath = '/home/u912812505/domains/keboncinta.com/public_html/matanu/uploads/products';
+
+                    if (!file_exists($uploadPath)) {
+                        mkdir($uploadPath, 0755, true);
+                    }
+
+                    if ($request->hasFile('image')) {
+                        $file = $request->file('image');
+                        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+                        $file->move($uploadPath, $filename);
+
+                        $data['image'] = 'uploads/products/' . $filename;
+                    }
             }
 
         Product::create($data);
@@ -73,7 +86,20 @@ class ProductController extends Controller
 
                 $file->move(public_path('uploads/products'), $filename);
 
-                $data['image'] = 'uploads/products/' . $filename;
+               $uploadPath = '/home/u912812505/domains/keboncinta.com/public_html/matanu/uploads/products';
+
+                    if (!file_exists($uploadPath)) {
+                        mkdir($uploadPath, 0755, true);
+                    }
+
+                    if ($request->hasFile('image')) {
+                        $file = $request->file('image');
+                        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+                        $file->move($uploadPath, $filename);
+
+                        $data['image'] = 'uploads/products/' . $filename;
+                    }
             }
 
             $product->update($data);
@@ -83,9 +109,13 @@ class ProductController extends Controller
 
         public function destroy(Product $product)
         {
-        if ($product->image && !str_starts_with($product->image, 'http')) {
-            File::delete(public_path($product->image));
-        }
+            if ($product->image && !str_starts_with($product->image, 'http')) {
+                $oldImage = '/home/u912812505/domains/keboncinta.com/public_html/matanu/' . $product->image;
+
+                if (file_exists($oldImage)) {
+                    unlink($oldImage);
+                }
+            }
 
             $product->delete();
 

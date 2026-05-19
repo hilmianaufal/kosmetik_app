@@ -39,7 +39,7 @@ window.posApp = function (products = []) {
         imageUrl(image) {
             if (!image) return '';
 
-            return image.startsWith('http') ? image : `/storage/${image}`;
+            return image.startsWith('http') ? image : `/${image}`;
         },
 
         addToCart(product) {

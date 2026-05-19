@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -29,9 +30,14 @@ class ProductController extends Controller
             'image' => 'nullable|image|max:2048',
         ]);
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
-        }
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+                $file->move(public_path('uploads/products'), $filename);
+
+                $data['image'] = 'uploads/products/' . $filename;
+            }
 
         Product::create($data);
 
@@ -59,10 +65,15 @@ class ProductController extends Controller
 
             if ($request->hasFile('image')) {
                 if ($product->image && !str_starts_with($product->image, 'http')) {
-                    Storage::disk('public')->delete($product->image);
+                    File::delete(public_path($product->image));
                 }
 
-                $data['image'] = $request->file('image')->store('products', 'public');
+                $file = $request->file('image');
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+                $file->move(public_path('uploads/products'), $filename);
+
+                $data['image'] = 'uploads/products/' . $filename;
             }
 
             $product->update($data);
@@ -72,9 +83,9 @@ class ProductController extends Controller
 
         public function destroy(Product $product)
         {
-            if ($product->image && !str_starts_with($product->image, 'http')) {
-                Storage::disk('public')->delete($product->image);
-            }
+        if ($product->image && !str_starts_with($product->image, 'http')) {
+            File::delete(public_path($product->image));
+        }
 
             $product->delete();
 

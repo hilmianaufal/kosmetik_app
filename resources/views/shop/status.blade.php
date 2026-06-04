@@ -110,7 +110,8 @@
                                             <img
                                                 src="{{ str_starts_with($item->product->image, 'http')
                                                     ? $item->product->image
-                                                    : asset('storage/' . $item->product->image) }}"
+                                                    : 'https://matanu.keboncinta.com/' . $item->product->image }}"
+                                                class="w-full h-full object-cover">
                                                 class="w-full h-full object-cover">
 
                                         @else
